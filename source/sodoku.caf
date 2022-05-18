@@ -49,31 +49,25 @@ allLegalNumbers = 0b111111111 # 9 1-bits
 
   solveR = (data, i81 = 0)  ->
     [x, y] = get81XY i81
-    v = data[y][x]
-    if v == 0
+    switch
+    when 0 == data[y][x]
       if 0 != legalNumbers = getLegalNumbers data, x, y
         find i til 9
           if legalNumbers & (1 << i)
             data[y][x] = i + 1
-            if i81 == 80
-              data
-
-            else if result = solveR data, i81 + 1
-              result
-
+            switch
+            when 80 == i81 then data
+            when result = solveR data, i81 + 1 then result
             else
               data[y][x] = 0
               undefined
 
         || undefined
 
-    else if i81 < 80
-      solveR data, i81 + 1
-
-    else data
+    when 80 == i81 then data
+    else solveR data, i81 + 1
 
   ## solve
-    IN: data: sodoku board
-    OUT: fully solved board, if possible, else: undefined
-  solve = (data, a) ->
-    solveR clone data
+    IN:   data: sodoku board (9 arrays of 9 the numbers 0 to 9; 0 is a non-filled-in-slot)
+    OUT:  if possible, then a fully solved board, else undefined
+  solve = (data, a) -> solveR clone data
