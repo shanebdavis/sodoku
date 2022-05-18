@@ -1,42 +1,17 @@
 import &ArtStandardLib
 
-data =
-  0 0 7   3 4 0   0 0 0
-  6 4 0   0 0 0   0 3 0
-  0 0 0   0 0 0   0 0 0
-
-  3 0 6   9 0 0   0 0 0
-  0 0 0   5 0 6   0 0 0
-  0 0 0   0 0 7   9 0 8
-
-  2 8 0   1 0 0   0 0 0
-  0 6 0   0 0 0   0 4 5
-  0 0 0   0 2 9   1 0 0
-
-validSequence = 1 2 3 4 5 6 7 8 9
-validSequenceNumber = 0b111111111 # 9 1-bits
-allLegalNumbers = validSequenceNumber
+allLegalNumbers = 0b111111111 # 9 1-bits
 
 {}
   squareNumberForLocation = (x, y) -> (x / 3 | 0) + (y / 3 | 0) * 3
 
   isPow2 = (bits) -> bits && !(bits & (bits - 1))
 
-  get81XY = (index) ->
-    []
-      index % 9
-      index / 9 | 0
+  get81XY = (index) -> index % 9, index / 9 | 0
+  get9XY  = (index) -> index % 3, index / 3 | 0
 
-  get9XY = (index) ->
-    []
-      index % 3
-      index / 3 | 0
-
-  eachElementInColunn = (data, colNumber, f) ->
-    each i til 9 with f data[i][colNumber]
-
-  eachElementInRow = (data, rowNumber, f) ->
-    each i til 9 with f data[rowNumber][i]
+  eachElementInColunn = (data, colNumber, f) -> each i til 9 with f data[i][colNumber]
+  eachElementInRow    = (data, rowNumber, f) -> each i til 9 with f data[rowNumber][i]
 
   eachElementInSquare = (data, squareNumber, f) ->
     [x, y] = get9XY squareNumber
@@ -101,15 +76,16 @@ allLegalNumbers = validSequenceNumber
     [x, y] = get81XY i81
     v = getValueXY data, x, y
     if v == 0
-      legalNumbers = getLegalNumbers data, x, y
-      if legalNumbers != 0
+      if 0 != legalNumbers = getLegalNumbers data, x, y
         find i til 9
           if legalNumbers & (1 << i)
             setValueXY data, x, y, i + 1
             if i81 == 80
               data
+
             else if result = solveR data, i81 + 1
               result
+
             else
               setValueXY data, x, y, 0
               undefined
@@ -124,5 +100,3 @@ allLegalNumbers = validSequenceNumber
     OUT: fully solved board, if possible, else: undefined
   solve = (data, a) ->
     solveR fastPassMax data
-
-
