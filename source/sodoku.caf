@@ -9,7 +9,7 @@ allLegalNumbers = 0b111111111 # 9 1-bits
   isValidSequence = (data, sequenceNumber, eachElementInSequence) ->
     num = 0
     eachElementInSequence data, sequenceNumber, (v) -> num += 1 << (v - 1)
-    num == 511
+    num == allLegalNumbers
 
   allRowsValid    = (data) -> !find i til 9 with !isValidSequence data, i, eachElementInRow
   allColumnsValid = (data) -> !find i til 9 with !isValidSequence data, i, eachElementInColunn
