@@ -6,19 +6,19 @@ allLegalNumbers = 0b111111111 # 9 1-bits
   ###################################
     Handy Validators; not essential
   ###################################
-  isValidSequence = (data, sequenceNumber, eachElementInSequence) ->
+  isValidSequence = (board, sequenceNumber, eachElementInSequence) ->
     num = 0
-    eachElementInSequence data, sequenceNumber, (v) -> num += 1 << (v - 1)
+    eachElementInSequence board, sequenceNumber, (v) -> num += 1 << (v - 1)
     num == allLegalNumbers
 
-  allRowsValid    = (data) -> !find i til 9 with !isValidSequence data, i, eachElementInRow
-  allColumnsValid = (data) -> !find i til 9 with !isValidSequence data, i, eachElementInColunn
-  allSquaresValid = (data) -> !find i til 9 with !isValidSequence data, i, eachElementInSquare
+  allRowsValid    = (board) -> !find i til 9 with !isValidSequence board, i, eachElementInRow
+  allColumnsValid = (board) -> !find i til 9 with !isValidSequence board, i, eachElementInColunn
+  allSquaresValid = (board) -> !find i til 9 with !isValidSequence board, i, eachElementInSquare
 
-  isAllValid = (data) ->
-    allRowsValid data
-    && allColumnsValid data
-    && allSquaresValid data
+  isAllValid = (board) ->
+    allRowsValid board
+    && allColumnsValid board
+    && allSquaresValid board
 
   ###################################
     Essential Solver
@@ -28,46 +28,46 @@ allLegalNumbers = 0b111111111 # 9 1-bits
   get81XY = (index) -> index % 9, index / 9 | 0
   get9XY  = (index) -> index % 3, index / 3 | 0
 
-  eachElementInColunn = (data, colNumber, f) -> each i til 9 with f data[i][colNumber]
-  eachElementInRow    = (data, rowNumber, f) -> each i til 9 with f data[rowNumber][i]
+  eachElementInColunn = (board, colNumber, f) -> each i til 9 with f board[i][colNumber]
+  eachElementInRow    = (board, rowNumber, f) -> each i til 9 with f board[rowNumber][i]
 
-  eachElementInSquare = (data, squareNumber, f) ->
+  eachElementInSquare = (board, squareNumber, f) ->
     [x, y] = get9XY squareNumber
     each c til 9
       [i, j] = get9XY c
-      f data[y * 3 + j][x * 3 + i]
+      f board[y * 3 + j][x * 3 + i]
 
-  getLegalNumbers = (data, x, y) ->
+  getLegalNumbers = (board, x, y) ->
     squareNumber = squareNumberForLocation x, y
     illegalNumbers = 0
-    eachElementInColunn data, x,            (v) -> if v > 0 then illegalNumbers |= 1 << (v - 1)
-    eachElementInRow    data, y,            (v) -> if v > 0 then illegalNumbers |= 1 << (v - 1)
-    eachElementInSquare data, squareNumber, (v) -> if v > 0 then illegalNumbers |= 1 << (v - 1)
+    eachElementInColunn board, x,            (v) -> if v > 0 then illegalNumbers |= 1 << (v - 1)
+    eachElementInRow    board, y,            (v) -> if v > 0 then illegalNumbers |= 1 << (v - 1)
+    eachElementInSquare board, squareNumber, (v) -> if v > 0 then illegalNumbers |= 1 << (v - 1)
     allLegalNumbers - illegalNumbers
 
   invLog2 = 1 / Math.log(2)
 
-  solveR = (data, i81 = 0)  ->
+  recursiveSolver = (board, i81 = 0)  ->
     [x, y] = get81XY i81
     switch
-    when 0 == data[y][x]
-      if 0 != legalNumbers = getLegalNumbers data, x, y
+    when 0 == board[y][x]
+      if 0 != legalNumbers = getLegalNumbers board, x, y
         find i til 9
           if legalNumbers & (1 << i)
-            data[y][x] = i + 1
+            board[y][x] = i + 1
             switch
-            when 80 == i81 then data
-            when result = solveR data, i81 + 1 then result
+            when 80 == i81 then board
+            when result = recursiveSolver board, i81 + 1 then result
             else
-              data[y][x] = 0
+              board[y][x] = 0
               undefined
 
         || undefined
 
-    when 80 == i81 then data
-    else solveR data, i81 + 1
+    when 80 == i81 then board
+    else recursiveSolver board, i81 + 1
 
   ## solve
-    IN:   data: sodoku board (9 arrays of 9 the numbers 0 to 9; 0 is a non-filled-in-slot)
+    IN:   board: sodoku board (9 arrays of 9 the numbers 0 to 9; 0 implies a non-filled-in-slot)
     OUT:  if possible, then a fully solved board, else undefined
-  solve = (data, a) -> solveR clone data
+  solve = (board, a) -> recursiveSolver clone board
