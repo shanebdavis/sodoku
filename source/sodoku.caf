@@ -1,0 +1,128 @@
+import &ArtStandardLib
+
+data =
+  0 0 7   3 4 0   0 0 0
+  6 4 0   0 0 0   0 3 0
+  0 0 0   0 0 0   0 0 0
+
+  3 0 6   9 0 0   0 0 0
+  0 0 0   5 0 6   0 0 0
+  0 0 0   0 0 7   9 0 8
+
+  2 8 0   1 0 0   0 0 0
+  0 6 0   0 0 0   0 4 5
+  0 0 0   0 2 9   1 0 0
+
+validSequence = 1 2 3 4 5 6 7 8 9
+validSequenceNumber = 0b111111111 # 9 1-bits
+allLegalNumbers = validSequenceNumber
+
+{}
+  squareNumberForLocation = (x, y) -> (x / 3 | 0) + (y / 3 | 0) * 3
+
+  isPow2 = (bits) -> bits && !(bits & (bits - 1))
+
+  get81XY = (index) ->
+    []
+      index % 9
+      index / 9 | 0
+
+  get9XY = (index) ->
+    []
+      index % 3
+      index / 3 | 0
+
+  eachElementInColunn = (data, colNumber, f) ->
+    each i til 9 with f data[i][colNumber]
+
+  eachElementInRow = (data, rowNumber, f) ->
+    each i til 9 with f data[rowNumber][i]
+
+  eachElementInSquare = (data, squareNumber, f) ->
+    [x, y] = get9XY squareNumber
+    each c til 9
+      [i, j] = get9XY c
+      f data[y * 3 + j][x * 3 + i]
+
+  isValidSequence = (data, sequenceNumber, eachElementInSequence) ->
+    num = 0
+    eachElementInSequence data, sequenceNumber, (v) -> num += 1 << (v - 1)
+    num == 511
+
+  allRowsValid    = (data) -> !find i til 9 with !isValidSequence data, i, eachElementInRow
+  allColumnsValid = (data) -> !find i til 9 with !isValidSequence data, i, eachElementInColunn
+  allSquaresValid = (data) -> !find i til 9 with !isValidSequence data, i, eachElementInSquare
+
+  isAllValid = (data) ->
+    allRowsValid data
+    && allColumnsValid data
+    && allSquaresValid data
+
+  getValueXY = (data, x, y) ->
+    data[y][x]
+
+  setValueXY = (data, x, y, v) ->
+    data[y][x] = v
+
+  getLegalNumbers = (data, x, y) ->
+    squareNumber = squareNumberForLocation x, y
+    illegalNumbers = 0
+    eachElementInColunn data, x,            (v) -> if v > 0 then illegalNumbers |= 1 << (v - 1)
+    eachElementInRow    data, y,            (v) -> if v > 0 then illegalNumbers |= 1 << (v - 1)
+    eachElementInSquare data, squareNumber, (v) -> if v > 0 then illegalNumbers |= 1 << (v - 1)
+    allLegalNumbers - illegalNumbers
+
+  invLog2 = 1 / Math.log(2)
+
+  ## fastPass
+    IN: data: sodoku board
+    OUT: new sodoku board, possibly with some numbers filled in
+
+    Fills in all blanks that are fully constrained by the other
+    numbers in their row, col and square.
+  fastPass = (data) ->
+    array row, y in data
+      array v, x in row
+        if v == 0 && isPow2 legalNumbers = getLegalNumbers data, x, y
+          Math.log(legalNumbers) * invLog2 + 1.01 | 0
+
+        else v
+
+  ## fastPassMax
+    run fastPass until the board stops changing
+  fastPassMax = (data) ->
+    newData = null
+    while neq data, newData = fastPass data
+      data = newData
+
+    data
+
+  solveR = (data, i81 = 0)  ->
+    [x, y] = get81XY i81
+    v = getValueXY data, x, y
+    if v == 0
+      legalNumbers = getLegalNumbers data, x, y
+      if legalNumbers != 0
+        find i til 9
+          if legalNumbers & (1 << i)
+            setValueXY data, x, y, i + 1
+            if i81 == 80
+              data
+            else if result = solveR data, i81 + 1
+              result
+            else
+              setValueXY data, x, y, 0
+              undefined
+
+    else if i81 < 80
+      solveR data, i81 + 1
+
+    else data
+
+  ## solve
+    IN: data: sodoku board
+    OUT: fully solved board, if possible, else: undefined
+  solve = (data, a) ->
+    solveR fastPassMax data
+
+
