@@ -3,22 +3,9 @@ import &ArtStandardLib
 allLegalNumbers = 0b111111111 # 9 1-bits
 
 {}
-  squareNumberForLocation = (x, y) -> (x / 3 | 0) + (y / 3 | 0) * 3
-
-  isPow2 = (bits) -> bits && !(bits & (bits - 1))
-
-  get81XY = (index) -> index % 9, index / 9 | 0
-  get9XY  = (index) -> index % 3, index / 3 | 0
-
-  eachElementInColunn = (data, colNumber, f) -> each i til 9 with f data[i][colNumber]
-  eachElementInRow    = (data, rowNumber, f) -> each i til 9 with f data[rowNumber][i]
-
-  eachElementInSquare = (data, squareNumber, f) ->
-    [x, y] = get9XY squareNumber
-    each c til 9
-      [i, j] = get9XY c
-      f data[y * 3 + j][x * 3 + i]
-
+  ###################################
+    Handy Validators; not essential
+  ###################################
   isValidSequence = (data, sequenceNumber, eachElementInSequence) ->
     num = 0
     eachElementInSequence data, sequenceNumber, (v) -> num += 1 << (v - 1)
@@ -33,11 +20,22 @@ allLegalNumbers = 0b111111111 # 9 1-bits
     && allColumnsValid data
     && allSquaresValid data
 
-  getValueXY = (data, x, y) ->
-    data[y][x]
+  ###################################
+    Essential Solver
+  ###################################
+  squareNumberForLocation = (x, y) -> (x / 3 | 0) + (y / 3 | 0) * 3
 
-  setValueXY = (data, x, y, v) ->
-    data[y][x] = v
+  get81XY = (index) -> index % 9, index / 9 | 0
+  get9XY  = (index) -> index % 3, index / 3 | 0
+
+  eachElementInColunn = (data, colNumber, f) -> each i til 9 with f data[i][colNumber]
+  eachElementInRow    = (data, rowNumber, f) -> each i til 9 with f data[rowNumber][i]
+
+  eachElementInSquare = (data, squareNumber, f) ->
+    [x, y] = get9XY squareNumber
+    each c til 9
+      [i, j] = get9XY c
+      f data[y * 3 + j][x * 3 + i]
 
   getLegalNumbers = (data, x, y) ->
     squareNumber = squareNumberForLocation x, y
@@ -49,37 +47,14 @@ allLegalNumbers = 0b111111111 # 9 1-bits
 
   invLog2 = 1 / Math.log(2)
 
-  ## fastPass
-    IN: data: sodoku board
-    OUT: new sodoku board, possibly with some numbers filled in
-
-    Fills in all blanks that are fully constrained by the other
-    numbers in their row, col and square.
-  fastPass = (data) ->
-    array row, y in data
-      array v, x in row
-        if v == 0 && isPow2 legalNumbers = getLegalNumbers data, x, y
-          Math.log(legalNumbers) * invLog2 + 1.01 | 0
-
-        else v
-
-  ## fastPassMax
-    run fastPass until the board stops changing
-  fastPassMax = (data) ->
-    newData = null
-    while neq data, newData = fastPass data
-      data = newData
-
-    data
-
   solveR = (data, i81 = 0)  ->
     [x, y] = get81XY i81
-    v = getValueXY data, x, y
+    v = data[y][x]
     if v == 0
       if 0 != legalNumbers = getLegalNumbers data, x, y
         find i til 9
           if legalNumbers & (1 << i)
-            setValueXY data, x, y, i + 1
+            data[y][x] = i + 1
             if i81 == 80
               data
 
@@ -87,8 +62,10 @@ allLegalNumbers = 0b111111111 # 9 1-bits
               result
 
             else
-              setValueXY data, x, y, 0
+              data[y][x] = 0
               undefined
+
+        || undefined
 
     else if i81 < 80
       solveR data, i81 + 1
@@ -99,4 +76,4 @@ allLegalNumbers = 0b111111111 # 9 1-bits
     IN: data: sodoku board
     OUT: fully solved board, if possible, else: undefined
   solve = (data, a) ->
-    solveR fastPassMax data
+    solveR clone data

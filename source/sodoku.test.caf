@@ -104,29 +104,6 @@ puzzle1FastPass4 =
   9 5 4   6 2 1   8 7 3
   8 1 3   4 7 5   6 9 2
 
-
-test 'squareNumberForLocation' ->
-  assert.eq 0, squareNumberForLocation 0, 0
-  assert.eq 2, squareNumberForLocation 8, 0
-  assert.eq 3, squareNumberForLocation 0, 3
-  assert.eq 3, squareNumberForLocation 2, 5
-  assert.eq 6, squareNumberForLocation 2, 8
-  assert.eq 8, squareNumberForLocation 8, 8
-
-test :isPow2 ->
-  assert.eq true, isPow2 0b1
-  assert.eq true, isPow2 0b10
-  assert.eq true, isPow2 0b100
-  assert.eq true, isPow2 0b1000
-  assert.eq true, isPow2 0b10000
-  assert.eq true, isPow2 0b100000
-  assert.eq true, isPow2 0b1000000
-  assert.eq true, isPow2 0b10000000
-  assert.eq true, isPow2 0b100000000
-
-  assert.eq false, isPow2 0b11
-  assert.eq false, isPow2 0b101000
-
 test :get9XY ->
   assert.eq [0, 0], get9XY 0
   assert.eq [1, 0], get9XY 1
@@ -196,25 +173,8 @@ test :getLegalNumbers ->
     0b0010000
     getLegalNumbers puzzle1, 7, 6
 
-test :fastPass ->
-  assert.eq puzzle1FastPass1, fp1 = fastPass puzzle1
-  assert.eq puzzle1FastPass2, fp2 = fastPass fp1
-  assert.eq puzzle1FastPass3, fp3 = fastPass fp2
-  assert.eq puzzle1FastPass4, fp4 = fastPass fp3
-  assert.false isAllValid fp4
-  assert.true isAllValid fastPass fp4
-
-test "fastPassMax can solve it all" ->
-  assert.true isAllValid fastPassMax puzzle1
-
-test "fastPassMax sometimes cant solve it all" ->
-  assert.false isAllValid fastPassMax puzzle90
-  assert.eq puzzle90, fastPassMax puzzle90
-
 test "solve only using fastPassMax" ->
-  assert.eq
-    fastPassMax puzzle1
-    solve puzzle1
+  assert.true isAllValid solve puzzle1
 
 test "solve puzzle90 only using recursion" ->
   assert.eq
@@ -231,6 +191,34 @@ test "solve puzzle90 only using recursion" ->
       1 7 4   3 5 2   9 8 6
       5 3 9   7 6 8   1 4 2
     solve puzzle90
+
+test "solve empty board" ->
+  assert.eq
+    []
+      1 2 3   4 5 6   7 8 9
+      4 5 6   7 8 9   1 2 3
+      7 8 9   1 2 3   4 5 6
+
+      2 1 4   3 6 5   8 9 7
+      3 6 5   8 9 7   2 1 4
+      8 9 7   2 1 4   3 6 5
+
+      5 3 1   6 4 2   9 7 8
+      6 4 2   9 7 8   5 3 1
+      9 7 8   5 3 1   6 4 2
+
+    solve []
+      0 0 0   0 0 0   0 0 0
+      0 0 0   0 0 0   0 0 0
+      0 0 0   0 0 0   0 0 0
+
+      0 0 0   0 0 0   0 0 0
+      0 0 0   0 0 0   0 0 0
+      0 0 0   0 0 0   0 0 0
+
+      0 0 0   0 0 0   0 0 0
+      0 0 0   0 0 0   0 0 0
+      0 0 0   0 0 0   0 0 0
 
 test "solve unsolvable returns undefined" ->
   assert.eq
