@@ -23,10 +23,9 @@ allLegalNumbers = 0b111111111 # 9 1-bits
   ###################################
     Essential Solver
   ###################################
-  squareNumberForLocation = (x, y) -> (x / 3 | 0) + (y / 3 | 0) * 3
-
-  get81XY = (index) -> index % 9, index / 9 | 0
-  get9XY  = (index) -> index % 3, index / 3 | 0
+  squareNumberForLocation = (x, y)  -> (x / 3 | 0) + (y / 3 | 0) * 3
+  get81XY                 = (i81)   -> i81 % 9, i81 / 9 | 0
+  get9XY                  = (i9)    -> i9  % 3, i9  / 3 | 0
 
   eachElementInColunn = (board, colNumber, f) -> each i til 9 with f board[i][colNumber]
   eachElementInRow    = (board, rowNumber, f) -> each i til 9 with f board[rowNumber][i]
