@@ -1,0 +1,27 @@
+{
+  "dependencies": {
+    "@art-suite/monorepo": "^1.6.1",
+    "art-build-configurator": "^1.0.0",
+    "art-standard-lib": "^1.71.3",
+    "art-suite": "^2.0.7",
+    "art-testbench": "^3.2.7",
+    "caffeine-script": "^0.74.1",
+    "case-sensitive-paths-webpack-plugin": "^2.2.0",
+    "coffee-loader": "^0.7.3",
+    "css-loader": "^6.2.0",
+    "jest": "^28.1.0",
+    "npm-watch": "^0.11.0",
+    "sodoku": "file:packages/sodoku",
+    "sodoku-quest": "file:packages/sodoku-quest",
+    "webpack": "^5.72.1",
+    "webpack-cli": "^4.9.2",
+    "webpack-dev-server": "^4.9.0",
+    "webpack-merge": "5.8"
+  },
+  "scripts": {
+    "clean": "art-monorepo clean",
+    "sync": "art-monorepo sync",
+    "test": "art-monorepo test",
+    "update": "art-monorepo update"
+  }
+}
