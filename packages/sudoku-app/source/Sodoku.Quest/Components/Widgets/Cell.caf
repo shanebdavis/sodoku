@@ -1,0 +1,45 @@
+import &StandardImport
+
+class Cell extends FluxComponent
+
+  @propFields
+    number: undefined
+    playerNumber: undefined
+    notes: undefined
+    selected: false
+    cell: point0
+
+  @getter
+    haveInitialNumber: -> @number > 0
+    havePlayerNumber: -> @playerNumber > 0
+    haveNotes: -> @notes > 0
+
+  render: ->
+    Element
+      size: 70
+      # draw: outline: #0002
+      on: pointerClick: -> @models.currentGame.toggleSelectedCell @cell
+      if @selected then draw: #ff8
+      if @haveInitialNumber || @havePlayerNumber
+        TextElement
+          :parentSize
+          :textCenterCenter
+          fontSize: 40
+          fontWeight: if @haveInitialNumber then :normal else :bold
+          fontFamily: :sans-serif
+          text: if @haveInitialNumber then @number else @playerNumber
+          color: if !@haveInitialNumber then #0b0 else #4
+      else if @haveNotes
+        TextElement
+          :childrenSize
+          :centerCenter
+          color: #8
+          fontFamily: :courier
+          text:
+            array i til 3
+              array j til 3
+                if &sudoku.hasEncodedNumber @notes, n = 1 + i * 3 + j
+                  '' + n
+                else ' '
+              .join ' '
+            .join '\n'

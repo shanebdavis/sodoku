@@ -1,0 +1,54 @@
+import &StandardImport
+
+class Board extends FluxComponent
+  @subscriptions
+    :currentGame.initialBoard
+    :currentGame.selectedCell
+    :currentGame.playerBoard
+    :currentGame.notesBoard
+
+  render: ->
+    Element
+      :childrenSize
+      draw:
+        radius: 10
+        :clip
+        :children
+        shape: (context, area) ->
+          each i til 9
+            x = i * (area.width / 9)
+            context.moveTo x, area.top
+            context.lineTo x, area.bottom
+            context.moveTo area.left, x
+            context.lineTo area.right, x
+        outline: color: #0004
+        {}
+          shape: (context, area) ->
+            each i til 3
+              x = i * (area.width / 3)
+              context.moveTo x, area.top
+              context.lineTo x, area.bottom
+              context.moveTo area.left, x
+              context.lineTo area.right, x
+          outline:
+            lineWidth: 3
+            color: :black
+        :resetClip
+        radius: 10
+        outline:
+          lineWidth: 3
+          color: :black
+
+      Element
+        :column :childrenSize
+        array j, y in @initialBoard
+          Element
+            :row :childrenSize
+            array n, x in j
+              cell = point x, y
+              Cell {}
+                cell
+                number: n
+                notes:            @notesBoard[y][x]
+                playerNumber:     @playerBoard[y][x]
+                selected: cell.eq @selectedCell

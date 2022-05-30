@@ -1,0 +1,71 @@
+import &StandardImport, &Components
+
+class Game extends FluxComponent
+  @subscriptions :currentGame.currentGame
+
+  render: ->
+    Element
+      padding: 10
+      draw: :white
+      on: keyPress: (event) ->
+        switch event.props extract key
+        when :1 :2 :3 :4 :5 :6 :7 :8 :9 then @models.currentGame.setNumber key | 0
+        when ' ' :Delete :Backspace   then @models.currentGame.clearNumber()
+        when :ArrowLeft   then @models.currentGame.moveLeft()
+        when :ArrowRight  then @models.currentGame.moveRight()
+        when :ArrowUp     then @models.currentGame.moveUp()
+        when :ArrowDown   then @models.currentGame.moveDown()
+
+        else log key
+
+      ScrollerWithBar
+        :column
+        :childrenTopCenter
+        TextElement
+          :childrenSize
+          text: "" Adiko - A sodoku game
+          fontFamily: :sans-serif
+          :textCenterCenter
+          fontSize: 30
+          margin: 30
+
+        Board()
+        NumberBar()
+
+        MenuButton
+          icon: :Reset
+          text: :Reset
+          action: @models.currentGame.reset
+
+        MenuButton
+          icon: :Reset
+          text: "" Reset notes
+          action: @models.currentGame.resetNotes
+
+        MenuButton
+          icon: :Solve
+          text: :Solve
+          action: @models.currentGame.solve
+
+        MenuButton
+          icon:   :e
+          text:   "" Play Board
+          action: (setValue) -> setValue && @models.currentGame.setPlayBoard()
+          rightText: @currentGame.editMode
+
+        MenuButton
+          icon:   :e
+          text:   "" Notes
+          action: (setValue) -> setValue && @models.currentGame.setNoteBoard()
+          rightText: @currentGame.editMode
+
+        MenuButton
+          icon:   :e
+          text:   "" Edit Board
+          action: (setValue) -> setValue && @models.currentGame.setEditBoard()
+          rightText: @currentGame.editMode
+
+        MenuButton
+          icon: :Reset
+          text: "" Reset All
+          action: @models.currentGame.resetAll

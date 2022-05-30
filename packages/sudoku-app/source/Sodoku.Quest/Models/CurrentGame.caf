@@ -1,0 +1,94 @@
+import &StandardImport
+
+class CurrentGame extends ApplicationState
+  @persistant()
+
+  @stateFields
+    editMode:     :play # :edit :note
+    selectedCell: undefined
+
+    initialBoard:
+      5 0 0   0 6 2   9 3 7
+      0 2 9   0 0 7   4 1 0
+      0 0 7   1 4 9   2 0 5
+
+      4 6 0   0 0 3   0 0 0
+      1 0 0   2 9 4   0 0 6
+      0 0 0   5 0 0   0 4 1
+
+      2 0 6   9 3 8   1 0 0
+      0 5 4   6 0 0   8 7 0
+      8 1 3   4 7 0   0 0 2
+
+    playerBoard: defaultPlayerBoard =
+      0 0 0   0 0 0   0 0 0
+      0 0 0   0 0 0   0 0 0
+      0 0 0   0 0 0   0 0 0
+
+      0 0 0   0 0 0   0 0 0
+      0 0 0   0 0 0   0 0 0
+      0 0 0   0 0 0   0 0 0
+
+      0 0 0   0 0 0   0 0 0
+      0 0 0   0 0 0   0 0 0
+      0 0 0   0 0 0   0 0 0
+
+    notesBoard: defaultPlayerBoard
+
+  setSelectedBoard: (board) ->
+    switch @editMode
+    when :play then @playerBoard = board
+    when :edit then @initialBoard = board
+    when :note then @notesBoard = board
+
+  setEditBoard: -> @editMode = :edit
+  setPlayBoard: -> @editMode = :play
+  setNoteBoard: -> @editMode = :note
+
+  @getter
+    editingBoard:   -> @editMode == :edit
+    noteTaking:     -> @editMode == :note
+    playing:        -> @editMode == :play
+    selectedBoard: ->
+      switch @editMode
+      when :play then @playerBoard
+      when :edit then @initialBoard
+      when :note then @notesBoard
+
+  toggleSelectedCell: (cell) ->
+    if cell.eq @selectedCell then @selectedCell = undefined else @selectedCell = cell
+
+  setNumber: (number) ->
+    if @selectedCell
+      @setSelectedBoard array row, y from @selectedBoard
+        array c, x from row
+          if @selectedCell.x == x && @selectedCell.y == y
+            if @noteTaking
+              &sudoku.toggleEncodedNumber c, number
+            else if @editingBoard || @initialBoard[y][x] == 0
+              if number == c then 0 else number
+
+          ? c
+
+  clearNumber: ->
+    if @selectedCell
+      @setSelectedBoard array row, y from @selectedBoard
+        array c, x from row
+          if @selectedCell.x == x && @selectedCell.y == y
+            0
+          else c
+
+  moveLeft:  -> @selectedCell = point ((@selectedCell?.x ? 1) - 1) %% 9, @selectedCell?.y
+  moveRight: -> @selectedCell = point ((@selectedCell?.x ? 1) + 1) %% 9, @selectedCell?.y
+
+  moveUp:    -> @selectedCell = point @selectedCell?.x, ((@selectedCell?.y ? 1) - 1) %% 9
+  moveDown:  -> @selectedCell = point @selectedCell?.x, ((@selectedCell?.y ? 1) + 1) %% 9
+
+  reset: -> @playerBoard = defaultPlayerBoard
+  resetNotes: -> @notesBoard = defaultPlayerBoard
+  resetAll: -> @initialBoard = @playerBoard = @notesBoard = defaultPlayerBoard
+
+  solve: ->
+    @playerBoard =
+      try &sudoku.solve @initialBoard
+      catch defaultPlayerBoard

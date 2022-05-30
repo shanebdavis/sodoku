@@ -1,0 +1,17 @@
+import &StandardImport
+
+class NumberButton extends FluxComponent
+
+  @propFields
+    number: undefined
+
+  render: ->
+    Element
+      size: 70
+      on: pointerClick: -> @models.currentGame.setNumber @number
+      TextElement
+        :parentSize
+        :textCenterCenter
+        fontSize: 30
+        fontFamily: :sans-serif
+        text: @number

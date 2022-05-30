@@ -1,0 +1,16 @@
+import &ArtStandardLib
+package: -> merge
+  &package
+  scripts:
+    start:
+      """
+        nn -s --watch&
+        cafSourceMaps=true webpack serve --hot --progress --open&
+        wait
+
+webpack:
+  # common properties are merged into each target's properties
+  common: {}
+
+  # each target's individual properties
+  targets: Client: {}

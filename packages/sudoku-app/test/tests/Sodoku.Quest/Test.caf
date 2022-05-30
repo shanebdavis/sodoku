@@ -1,0 +1,3 @@
+import &StandardImport
+suite: ->
+  test 'Quest' -> assert.eq 1, 1

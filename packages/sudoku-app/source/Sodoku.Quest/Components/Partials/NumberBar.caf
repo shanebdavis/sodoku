@@ -1,0 +1,9 @@
+import &StandardImport
+
+class NumberBar extends FluxComponent
+
+  render: ->
+    Element
+      :row :childrenSize
+      array i til 9
+        NumberButton number: i + 1

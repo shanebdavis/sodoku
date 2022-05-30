@@ -1,0 +1,7 @@
+import &StandardImport, &Components
+
+class App extends FluxComponent
+
+  render: ->
+    Element
+      Pages.Game()

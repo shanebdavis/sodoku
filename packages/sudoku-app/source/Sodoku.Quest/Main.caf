@@ -1,0 +1,10 @@
+import &ArtSuite
+
+&Models
+
+initArtSuiteApp
+  title:          :Sodoku-Quest
+  MainComponent:  class SodokuQuest extends Component
+    render: ->
+      CanvasElement
+        &App()
