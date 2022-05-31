@@ -1,9 +1,19 @@
-import &StandardImport, &Components
+import &StandardImport, &Components, &sudoku
 
 class Game extends FluxComponent
   @subscriptions :currentGame.currentGame
 
   render: ->
+    if @currentGame.isLegalBoard
+      if @currentGame.editingBoard
+        numSolutions =
+          @currentGame.solutions
+          .length
+      else
+        solved = eq
+          [solution] = @currentGame.solutions
+          mergeBoards @currentGame.initialBoard, @currentGame.playerBoard
+
     Element
       padding: 10
       draw: :white
@@ -32,14 +42,50 @@ class Game extends FluxComponent
         Board()
         NumberBar()
 
+
+        Element
+          padding: top: 10 bottom: 10
+          :parentWidthChildrenHeight
+          TextElement
+            :parentWidthChildrenHeight
+            fontFamily: :sans-serif
+            text:
+              if @models.currentGame.editingBoard
+                "Editing: " +
+                  if legal
+                    switch numSolutions
+                    when 0 then 'BAD: not solvable'
+                    when 1 then 'GOOD: exactly one solution'
+                    else if numSolutions < @currentGame.maxSolutionsScanned then 'BAD: #{numSolutions} solutions'
+                    else 'BAD: > #{numSolutions} solutions'
+                  else 'BAD: illegal'
+              else
+                (if @currentGame.noteTaking then "Note taking: " else "Playing: ") +
+                  if @currentGame.solved
+                    "solved!"
+                  else "not solved"
+
+        MenuToggle
+          icon:   :n
+          text:   "" Take Notes
+          isOn:   @currentGame.noteTaking
+          action: if !@currentGame.editingBoard
+            @models.currentGame.setNoteTaking
+
+        MenuToggle
+          icon:   :e
+          text:   "" Edit Board
+          isOn:   @currentGame.editingBoard
+          action: @models.currentGame.setEditingBoard
+
         MenuButton
-          icon: :Reset
-          text: :Reset
-          action: @models.currentGame.reset
+          icon: :Auto
+          text: "" Auto Notes
+          action: @models.currentGame.autoNotes
 
         MenuButton
           icon: :Reset
-          text: "" Reset notes
+          text: "" Reset Notes
           action: @models.currentGame.resetNotes
 
         MenuButton
@@ -48,24 +94,18 @@ class Game extends FluxComponent
           action: @models.currentGame.solve
 
         MenuButton
-          icon:   :e
-          text:   "" Play Board
-          action: (setValue) -> setValue && @models.currentGame.setPlayBoard()
-          rightText: @currentGame.editMode
-
-        MenuButton
-          icon:   :e
-          text:   "" Notes
-          action: (setValue) -> setValue && @models.currentGame.setNoteBoard()
-          rightText: @currentGame.editMode
-
-        MenuButton
-          icon:   :e
-          text:   "" Edit Board
-          action: (setValue) -> setValue && @models.currentGame.setEditBoard()
-          rightText: @currentGame.editMode
+          icon: :Reset
+          text: "" Reset Solution
+          action: @models.currentGame.reset
 
         MenuButton
           icon: :Reset
           text: "" Reset All
-          action: @models.currentGame.resetAll
+          action: if @currentGame.editingBoard
+            @models.currentGame.resetAll
+
+        MenuButton
+          icon: :Export
+          text: :Export
+          action: ->
+            log formattedInspect &sudoku.mergeBoards @currentGame.initialBoard, @currentGame.playerBoard

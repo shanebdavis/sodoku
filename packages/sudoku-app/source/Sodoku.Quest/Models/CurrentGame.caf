@@ -1,11 +1,31 @@
-import &StandardImport
+import &StandardImport, &sudoku
+
+emptyGameBoard = array til 9 with array til 9 with 0
+
+normalizeState = (state) ->
+  state extract initialBoard, playerBoard, notesBoard
+  return state unless initialBoard && playerBoard && notesBoard
+
+  merge state, {}
+    isLegalBoard = isAllLegal initialBoard
+    playerBoard
+    initialBoard
+    notesBoard
+    mergedBoard = mergeBoards initialBoard, playerBoard
+    autoNotes:    getAllLegalNumbers mergedBoard
+    solutions =   solve initialBoard, state.maxSolutionsScanned
+    solved: eq solutions[0], mergedBoard
+    numberCounts: each row in mergedBoard into numberCounts = array to 9 with 0
+      each n in row do numberCounts[n]++
 
 class CurrentGame extends ApplicationState
   @persistant()
 
-  @stateFields
-    editMode:     :play # :edit :note
-    selectedCell: undefined
+  @stateFields normalizeState
+    editingBoard:         false
+    noteTaking:           false
+    selectedCell:         null
+    maxSolutionsScanned:  100
 
     initialBoard:
       5 0 0   0 6 2   9 3 7
@@ -20,43 +40,39 @@ class CurrentGame extends ApplicationState
       0 5 4   6 0 0   8 7 0
       8 1 3   4 7 0   0 0 2
 
-    playerBoard: defaultPlayerBoard =
-      0 0 0   0 0 0   0 0 0
-      0 0 0   0 0 0   0 0 0
-      0 0 0   0 0 0   0 0 0
-
-      0 0 0   0 0 0   0 0 0
-      0 0 0   0 0 0   0 0 0
-      0 0 0   0 0 0   0 0 0
-
-      0 0 0   0 0 0   0 0 0
-      0 0 0   0 0 0   0 0 0
-      0 0 0   0 0 0   0 0 0
+    playerBoard: defaultPlayerBoard = emptyGameBoard
 
     notesBoard: defaultPlayerBoard
 
-  setSelectedBoard: (board) ->
-    switch @editMode
-    when :play then @playerBoard = board
-    when :edit then @initialBoard = board
-    when :note then @notesBoard = board
 
-  setEditBoard: -> @editMode = :edit
-  setPlayBoard: -> @editMode = :play
-  setNoteBoard: -> @editMode = :note
+  setSelectedBoard: (board) -> @[@selectedBoardTime] = board
+
+  setPlayBoard: -> @editingBoard = @noteTaking = false
 
   @getter
-    editingBoard:   -> @editMode == :edit
-    noteTaking:     -> @editMode == :note
-    playing:        -> @editMode == :play
-    selectedBoard: ->
-      switch @editMode
-      when :play then @playerBoard
-      when :edit then @initialBoard
-      when :note then @notesBoard
+    playing: -> !@editingBoard && !@noteTaking
+    selectedBoardTime: ->
+      if @editingBoard then :initialBoard
+      else if @noteTaking then :notesBoard
+      else :playerBoard
 
-  toggleSelectedCell: (cell) ->
-    if cell.eq @selectedCell then @selectedCell = undefined else @selectedCell = cell
+    selectedBoard: -> @[@selectedBoardTime]
+
+
+  postProcessLoadedState: normalizeState
+
+  setState: (key, value) ->
+    stateChanged = false
+    if isFunction key
+      stateChanged = true
+      newState = key @state
+    else
+      if isPlainObject key
+        newState = key
+      else if isString key
+        newState = [key]: value
+      key
+    super normalizeState merge @state, newState
 
   setNumber: (number) ->
     if @selectedCell
@@ -64,7 +80,7 @@ class CurrentGame extends ApplicationState
         array c, x from row
           if @selectedCell.x == x && @selectedCell.y == y
             if @noteTaking
-              &sudoku.toggleEncodedNumber c, number
+              toggleEncodedNumber c, number
             else if @editingBoard || @initialBoard[y][x] == 0
               if number == c then 0 else number
 
@@ -78,17 +94,20 @@ class CurrentGame extends ApplicationState
             0
           else c
 
-  moveLeft:  -> @selectedCell = point ((@selectedCell?.x ? 1) - 1) %% 9, @selectedCell?.y
-  moveRight: -> @selectedCell = point ((@selectedCell?.x ? 1) + 1) %% 9, @selectedCell?.y
-
-  moveUp:    -> @selectedCell = point @selectedCell?.x, ((@selectedCell?.y ? 1) - 1) %% 9
-  moveDown:  -> @selectedCell = point @selectedCell?.x, ((@selectedCell?.y ? 1) + 1) %% 9
-
   reset: -> @playerBoard = defaultPlayerBoard
   resetNotes: -> @notesBoard = defaultPlayerBoard
   resetAll: -> @initialBoard = @playerBoard = @notesBoard = defaultPlayerBoard
 
   solve: ->
     @playerBoard =
-      try &sudoku.solve @initialBoard
+      try solve @initialBoard
       catch defaultPlayerBoard
+
+  ####################
+    View State
+  ####################
+  moveLeft:  -> @selectedCell = point ((@selectedCell?.x ? 1) - 1) %% 9, @selectedCell?.y
+  moveRight: -> @selectedCell = point ((@selectedCell?.x ? 1) + 1) %% 9, @selectedCell?.y
+
+  moveUp:    -> @selectedCell = point @selectedCell?.x, ((@selectedCell?.y ? 1) - 1) %% 9
+  moveDown:  -> @selectedCell = point @selectedCell?.x, ((@selectedCell?.y ? 1) + 1) %% 9

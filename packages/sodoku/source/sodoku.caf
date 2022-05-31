@@ -4,38 +4,16 @@ allEncodedNumbers = 0b111111111 # 9 1-bits
 
 {}
   ###################################
-    Handy Validators; not essential
+    Validator testers
   ###################################
-  isValidSequence = (board, sequenceNumber, eachElementInSequence) ->
-    encodedNumbers = 0
-    eachElementInSequence board, sequenceNumber, (v) -> encodedNumbers = addEncodedNumber encodedNumbers, v
-    encodedNumbers == allEncodedNumbers
+  allGroupsOk  = (board, eachElementInGroup, testEachElementInGroup) ->
+    !find i til 9 with !testEachElementInGroup board, i, eachElementInGroup
 
-  allRowsValid    = (board) -> !find i til 9 with !isValidSequence board, i, eachElementInRow
-  allColumnsValid = (board) -> !find i til 9 with !isValidSequence board, i, eachElementInColunn
-  allSquaresValid = (board) -> !find i til 9 with !isValidSequence board, i, eachElementInSquare
+  isAllOk = (board, testEachElementInGroup) ->
+    allGroupsOk    board, eachElementInRow,     testEachElementInGroup
+    && allGroupsOk board, eachElementInColunn,  testEachElementInGroup
+    && allGroupsOk board, eachElementInSquare,  testEachElementInGroup
 
-  isAllValid = (board) ->
-    allRowsValid board
-    && allColumnsValid board
-    && allSquaresValid board
-
-  ###################################
-    Tools
-  ###################################
-
-  ###################################
-    Encoding
-  ###################################
-  encodeNumber        = (number) -> 1 << (number - 1)
-  addEncodedNumber    = (numbers, number) -> numbers | encodeNumber number
-  removeEncodedNumber = (numbers, number) -> numbers & (allEncodedNumbers - encodeNumber number)
-  toggleEncodedNumber = (numbers, number) -> numbers ^ encodeNumber number
-  hasEncodedNumber    = (numbers, number) -> !!(numbers & encodeNumber number)
-
-  ###################################
-    Essential Solver
-  ###################################
   squareNumberForLocation = (x, y)  -> (x / 3 | 0) + (y / 3 | 0) * 3
   get81XY                 = (i81)   -> i81 % 9, i81 / 9 | 0
   get9XY                  = (i9)    -> i9  % 3, i9  / 3 | 0
@@ -49,37 +27,118 @@ allEncodedNumbers = 0b111111111 # 9 1-bits
       [i, j] = get9XY c
       f board[y * 3 + j][x * 3 + i]
 
+  ###################################
+    Handy Validators; not essential
+  ###################################
+  isValidGroup = (board, groupNumber, eachElementInGroup) ->
+    encodedNumbers = 0
+    eachElementInGroup board, groupNumber, (v) -> encodedNumbers = addEncodedNumber encodedNumbers, v
+    encodedNumbers == allEncodedNumbers
+
+  isAllValid = (board) -> isAllOk board, isValidGroup
+
+  ###################################
+    Legal Checks
+  ###################################
+  isLegalGroup = (board, groupNumber, eachElementInGroup) ->
+    encodedNumbers = 0
+    isLegal = true
+    eachElementInGroup board, groupNumber, (v) -> if v > 0
+      if hasEncodedNumber encodedNumbers, v
+        isLegal = false
+      else
+        encodedNumbers = addEncodedNumber encodedNumbers, v
+
+    isLegal
+
+  isAllLegal = (board) -> isAllOk board, isLegalGroup
+
+  ###################################
+    Encoding
+  ###################################
+  encodeNumber        = (number) -> if number == 0 then 0 else 1 << (number - 1)
+  addEncodedNumber    = (numbers, number) -> numbers | encodeNumber number
+  removeEncodedNumber = (numbers, number) -> numbers & (allEncodedNumbers - encodeNumber number)
+  toggleEncodedNumber = (numbers, number) -> numbers ^ encodeNumber number
+  hasEncodedNumber    = (numbers, number) -> !!(numbers & encodeNumber number)
+
+  ################x###################
+    Board tools
+  ###################################
+  mergeBoards = (boardA, boardB) ->
+    array row, y in boardA
+      array number, x in row
+        boardB[y][x] || boardA[y][x]
+
+  ################x###################
+    Essential Solver
+  ###################################
+
   getLegalNumbers = (board, x, y) ->
     squareNumber = squareNumberForLocation x, y
     illegalNumbers = 0
-    eachElementInColunn board, x,            (v) -> if v > 0 then illegalNumbers = addEncodedNumber illegalNumbers, v
-    eachElementInRow    board, y,            (v) -> if v > 0 then illegalNumbers = addEncodedNumber illegalNumbers, v
-    eachElementInSquare board, squareNumber, (v) -> if v > 0 then illegalNumbers = addEncodedNumber illegalNumbers, v
+    f = (v) -> illegalNumbers = addEncodedNumber illegalNumbers, v
+
+    # inlined the following for 2x speed improviment in NodeJS runs:
+    #   eachElementInColunn board, x,            f
+    #   eachElementInRow    board, y,            f
+    #   eachElementInSquare board, squareNumber, f
+    each i til 9 with f board[i][x]
+    each i til 9 with f board[y][i]
+    [x1, y1] = get9XY squareNumber
+    each c til 9
+      [i, j] = get9XY c
+      f board[y1 * 3 + j][x1 * 3 + i]
+
     allEncodedNumbers - illegalNumbers
 
+  getAllLegalNumbers = (board) ->
+    array row, y in board
+      array number, x in row
+        if number > 0 then 0
+        else getLegalNumbers board, x, y
+
   invLog2 = 1 / Math.log(2)
-
-  recursiveSolver = (board, i81 = 0)  ->
-    [x, y] = get81XY i81
-    switch
-    when 0 == board[y][x]
-      if 0 != legalNumbers = getLegalNumbers board, x, y
-        find n from 1 to 9
-          if hasEncodedNumber legalNumbers, n
-            board[y][x] = n
-            switch
-            when 80 == i81 then board
-            when result = recursiveSolver board, i81 + 1 then result
-            else
-              board[y][x] = 0
-              undefined
-
-        || undefined
-
-    when 80 == i81 then board
-    else recursiveSolver board, i81 + 1
 
   ## solve
     IN:   board: sodoku board (9 arrays of 9 the numbers 0 to 9; 0 implies a non-filled-in-slot)
     OUT:  if possible, then a fully solved board, else undefined
-  solve = (board) -> recursiveSolver clone board
+  solve = (board, numSolutionsToReturn = 1) ->
+
+    solutions = []
+    steps = 0
+
+    recursiveSolver = (board, i81 = 0)  ->
+      [x, y] = get81XY i81
+      steps++
+      switch
+      when 0 == board[y][x]
+        if 0 != legalNumbers = getLegalNumbers board, x, y
+          find n from 1 to 9
+            if hasEncodedNumber legalNumbers, n
+              board[y][x] = n
+              
+              if 80 == i81
+                solutions.push clone board
+              else
+                recursiveSolver board, i81 + 1
+
+              board[y][x] = 0
+
+              if solutions.length >= numSolutionsToReturn
+                true
+              else
+                undefined
+
+          || undefined
+
+      when 80 == i81
+        solutions.push clone board
+        board
+
+      else recursiveSolver board, i81 + 1
+
+    recursiveSolver clone board
+    # log {} steps
+
+    if numSolutionsToReturn > 1 then solutions else solutions[0]

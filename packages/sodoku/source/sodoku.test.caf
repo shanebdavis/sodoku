@@ -168,9 +168,6 @@ test :isAllValid ->
   undefined
 
 test "isAllValid when only the squares are invalid" ->
-  assert.true allRowsValid onlySquaresInvalidBoard
-  assert.true allColumnsValid onlySquaresInvalidBoard
-  assert.false allSquaresValid onlySquaresInvalidBoard
   assert.false isAllValid onlySquaresInvalidBoard
 
 test :getLegalNumbers ->
@@ -244,3 +241,132 @@ test "solve unsolvable returns undefined" ->
       2 5 3   1 8 6   0 7 4 # << col 6 has no legal values
       6 8 4   2 0 7   5 0 0
       7 9 1   0 5 0   6 0 8
+
+test "isAllLegal for legal boards" ->
+  assert.true isAllLegal puzzle1
+  assert.true isAllLegal puzzle90
+
+test "isAllLegal for legal boards" ->
+  assert.false isAllLegal []
+    1 0 0   0 0 0   0 0 1
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+
+  assert.false isAllLegal []
+    1 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+    1 0 0   0 0 0   0 0 0
+
+  assert.false isAllLegal []
+    1 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+    0 0 1   0 0 0   0 0 0
+
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+
+  assert.true isAllLegal []
+    1 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+
+    0 0 0   1 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+    0 0 0   0 0 0   0 0 0
+
+boardWith2Solutions =
+  0 5 0   0 0 0   0 0 0
+  3 7 4   0 8 0   0 9 0
+  0 0 1   2 0 3   4 0 0
+
+  0 0 3   0 0 0   0 0 0
+  0 6 0   3 1 0   0 5 0
+  0 0 5   6 0 7   8 3 0
+
+  0 0 6   0 7 0   3 0 0
+  1 2 0   0 3 0   7 4 0
+  0 0 0   0 9 6   0 0 0
+
+test "solver returning multiple results" ->
+  assert.eq
+    []
+      []
+        6 5 2   7 4 9   1 8 3
+        3 7 4   5 8 1   6 9 2
+        8 9 1   2 6 3   4 7 5
+
+        7 1 3   9 5 8   2 6 4
+        2 6 8   3 1 4   9 5 7
+        9 4 5   6 2 7   8 3 1
+
+        5 8 6   4 7 2   3 1 9
+        1 2 9   8 3 5   7 4 6
+        4 3 7   1 9 6   5 2 8
+
+      []
+        6 5 2   7 4 9   1 8 3
+        3 7 4   5 8 1   6 9 2
+        8 9 1   2 6 3   4 7 5
+
+        7 4 3   9 5 8   2 6 1
+        2 6 8   3 1 4   9 5 7
+        9 1 5   6 2 7   8 3 4
+
+        5 8 6   4 7 2   3 1 9
+        1 2 9   8 3 5   7 4 6
+        4 3 7   1 9 6   5 2 8
+    solve boardWith2Solutions, 10
+
+slowToSolveBoard = []
+  0 5 0   0 0 0   0 0 0
+  3 7 4   0 8 0   0 9 0
+  0 0 1   2 0 3   4 0 0
+
+  0 0 0   0 0 0   0 0 0
+  0 0 0   3 0 0   0 5 0
+  0 0 5   6 0 7   0 0 1
+
+  0 0 6   0 7 0   3 0 0
+  1 0 0   0 3 0   7 4 0
+  0 0 0   0 9 6   0 0 0
+
+test "solve slowToSolveBoard" ->
+  assert.eq
+    []
+      6 5 2   7 4 9   1 8 3
+      3 7 4   5 8 1   6 9 2
+      8 9 1   2 6 3   4 7 5
+
+      7 1 3   9 5 8   2 6 4
+      2 6 8   3 1 4   9 5 7
+      9 4 5   6 2 7   8 3 1
+
+      5 8 6   4 7 2   3 1 9
+      1 2 9   8 3 5   7 4 6
+      4 3 7   1 9 6   5 2 8
+    solve slowToSolveBoard

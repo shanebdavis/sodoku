@@ -1,6 +1,7 @@
 import &StandardImport
 
 class Cell extends FluxComponent
+  @subscriptions :currentGame.noteTaking :currentGame.editingBoard
 
   @propFields
     number: undefined
@@ -17,9 +18,11 @@ class Cell extends FluxComponent
   render: ->
     Element
       size: 70
-      # draw: outline: #0002
-      on: pointerClick: -> @models.currentGame.toggleSelectedCell @cell
-      if @selected then draw: #ff8
+      on: pointerClick: -> @models.currentGame.setSelectedCell @cell
+      if @selected then draw:
+        if @editingBoard then #4af
+        else if @noteTaking then #e else #ff8
+
       if @haveInitialNumber || @havePlayerNumber
         TextElement
           :parentSize
@@ -29,6 +32,7 @@ class Cell extends FluxComponent
           fontFamily: :sans-serif
           text: if @haveInitialNumber then @number else @playerNumber
           color: if !@haveInitialNumber then #0b0 else #4
+
       else if @haveNotes
         TextElement
           :childrenSize
