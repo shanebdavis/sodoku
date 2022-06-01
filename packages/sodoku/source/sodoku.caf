@@ -76,8 +76,8 @@ allEncodedNumbers = 0b111111111 # 9 1-bits
 
   getLegalNumbers = (board, x, y) ->
     squareNumber = squareNumberForLocation x, y
-    illegalNumbers = 0
-    f = (v) -> illegalNumbers = addEncodedNumber illegalNumbers, v
+    legalNumbers = allEncodedNumbers
+    f = (v) -> legalNumbers = removeEncodedNumber legalNumbers, v
 
     # inlined the following for 2x speed improviment in NodeJS runs:
     #   eachElementInColunn board, x,            f
@@ -90,13 +90,40 @@ allEncodedNumbers = 0b111111111 # 9 1-bits
       [i, j] = get9XY c
       f board[y1 * 3 + j][x1 * 3 + i]
 
-    allEncodedNumbers - illegalNumbers
+    legalNumbers
+
+  getUnfinishedNumbers = (board, x, y) ->
+    squareNumber = squareNumberForLocation x, y
+    unfinishedNumbers = allEncodedNumbers
+    f = (v) -> unfinishedNumbers = removeEncodedNumber unfinishedNumbers, v
+
+    # inlined the following for 2x speed improviment in NodeJS runs:
+    #   eachElementInColunn board, x,            f
+    #   eachElementInRow    board, y,            f
+    #   eachElementInSquare board, squareNumber, f
+    # each i til 9 with f board[i][x]
+    # u1 = unfinishedNumbers; unfinishedNumbers = allEncodedNumbers
+    # each i til 9 with f board[y][i]
+    # u2 = unfinishedNumbers; unfinishedNumbers = allEncodedNumbers
+    [x1, y1] = get9XY squareNumber
+    each c til 9
+      [i, j] = get9XY c
+      f board[y1 * 3 + j][x1 * 3 + i]
+
+    unfinishedNumbers # | u1 | u2
 
   getAllLegalNumbers = (board) ->
     array row, y in board
       array number, x in row
         if number > 0 then 0
         else getLegalNumbers board, x, y
+
+  getAllUnfinishedNumbers = (board) ->
+    array row, y in board
+      array number, x in row
+        # if number > 0 then 0
+        getUnfinishedNumbers board, x, y
+
 
   invLog2 = 1 / Math.log(2)
 
@@ -117,7 +144,7 @@ allEncodedNumbers = 0b111111111 # 9 1-bits
           find n from 1 to 9
             if hasEncodedNumber legalNumbers, n
               board[y][x] = n
-              
+
               if 80 == i81
                 solutions.push clone board
               else

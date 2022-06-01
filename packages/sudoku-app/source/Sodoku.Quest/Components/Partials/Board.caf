@@ -1,4 +1,4 @@
-import &StandardImport
+import &StandardImport, &sudoku
 
 class Board extends FluxComponent
   @subscriptions
@@ -6,6 +6,10 @@ class Board extends FluxComponent
     :currentGame.selectedCell
     :currentGame.playerBoard
     :currentGame.notesBoard
+    :currentGame.autoNotes
+    :currentGame.selectedNumber
+    :currentGame.unfinishedNumbers
+    :gameView.gameView
 
   render: ->
     Element
@@ -44,11 +48,43 @@ class Board extends FluxComponent
         array j, y in @initialBoard
           Element
             :row :childrenSize
-            array n, x in j
+            array number, x in j
               cell = point x, y
+              color =
+                if @gameView.showLegalPlacements && hasEncodedNumber @autoNotes[y][x], @selectedNumber
+                  #4af7
+
+                else if @gameView.showUnfinishedGroups && hasEncodedNumber @unfinishedNumbers[y][x], @selectedNumber
+                  #4af3
+
+                else :white
+
+              shade =
+                if @gameView.showSelectedRowColumn
+                  if x == @selectedCell.x || y == @selectedCell.y
+                    .25
+                  else if squareNumberForLocation(x, y) == squareNumberForLocation @selectedCell.x, @selectedCell.y
+                    .15
+                  else 0
+
+                else 0
+
+
               Cell {}
                 cell
-                number: n
-                notes:            @notesBoard[y][x]
+                number
+                notes:
+                  if @gameView.showAutoNotes
+                    @autoNotes[y][x]
+                  else
+                    @notesBoard[y][x]
+
                 playerNumber:     @playerBoard[y][x]
-                selected: cell.eq @selectedCell
+                color:
+                  if cell.eq @selectedCell
+                    if @editingBoard then #4af
+                    else if @noteTaking then #e else #ff8
+                  else if @gameView.showAllSelectedNumbers && @selectedNumber > 0 && number == @selectedNumber
+                    #ff88
+                  else
+                    rgbColor(color).blend #000 shade

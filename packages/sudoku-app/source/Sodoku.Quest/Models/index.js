@@ -4,5 +4,6 @@
 (module.exports = require('./namespace'))
 
 .addModules({
-  CurrentGame: require('./CurrentGame')
+  CurrentGame: require('./CurrentGame'),
+  GameView:    require('./GameView')
 });

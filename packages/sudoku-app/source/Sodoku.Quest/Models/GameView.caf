@@ -1,0 +1,12 @@
+import &StandardImport, &sudoku
+
+class GameView extends ApplicationState
+  @persistant()
+
+  @stateFields
+    showAllSelectedNumbers: false
+    showNumberCounts: false
+    showUnfinishedGroups: false
+    showSelectedRowColumn: false
+    showAutoNotes: false
+    showLegalPlacements: false

@@ -1,9 +1,16 @@
 import &StandardImport
 
 class NumberBar extends FluxComponent
+  @subscriptions
+    :gameView.showNumberCounts
+    :currentGame.numberCounts
+    :currentGame.selectedNumber
 
   render: ->
     Element
       :row :childrenSize
-      array i til 9
-        NumberButton number: i + 1
+      array i from 1 to 9
+        NumberButton
+          number: i
+          selected: i == @selectedNumber
+          count: @showNumberCounts && @numberCounts[i]

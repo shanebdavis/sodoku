@@ -7,7 +7,7 @@ class Cell extends FluxComponent
     number: undefined
     playerNumber: undefined
     notes: undefined
-    selected: false
+    color: undefined
     cell: point0
 
   @getter
@@ -19,9 +19,7 @@ class Cell extends FluxComponent
     Element
       size: 70
       on: pointerClick: -> @models.currentGame.setSelectedCell @cell
-      if @selected then draw:
-        if @editingBoard then #4af
-        else if @noteTaking then #e else #ff8
+      draw: @color
 
       if @haveInitialNumber || @havePlayerNumber
         TextElement

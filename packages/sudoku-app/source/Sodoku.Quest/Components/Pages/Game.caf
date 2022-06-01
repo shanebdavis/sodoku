@@ -1,7 +1,7 @@
 import &StandardImport, &Components, &sudoku
 
 class Game extends FluxComponent
-  @subscriptions :currentGame.currentGame
+  @subscriptions :currentGame.currentGame :gameView.gameView
 
   render: ->
     if @currentGame.isLegalBoard
@@ -52,7 +52,7 @@ class Game extends FluxComponent
             text:
               if @models.currentGame.editingBoard
                 "Editing: " +
-                  if legal
+                  if @currentGame.isLegalBoard
                     switch numSolutions
                     when 0 then 'BAD: not solvable'
                     when 1 then 'GOOD: exactly one solution'
@@ -78,10 +78,12 @@ class Game extends FluxComponent
           isOn:   @currentGame.editingBoard
           action: @models.currentGame.setEditingBoard
 
-        MenuButton
-          icon: :Auto
-          text: "" Auto Notes
-          action: @models.currentGame.autoNotes
+        array isOn, key from @gameView
+          MenuToggle {}
+            text =  upperCamelCase key, ' '
+            icon:   text
+            isOn
+            action: @models.gameView[lowerCamelCase "set #{key}"]
 
         MenuButton
           icon: :Reset

@@ -4,14 +4,30 @@ class NumberButton extends FluxComponent
 
   @propFields
     number: undefined
+    count: undefined
+    selected: false
 
   render: ->
     Element
       size: 70
       on: pointerClick: -> @models.currentGame.setNumber @number
+      draw:
+        padding: 2
+        radius: 5
+        fill: if @selected then #ff8
+      padding: 5
       TextElement
         :parentSize
         :textCenterCenter
         fontSize: 30
         fontFamily: :sans-serif
         text: @number
+
+      if isNumber @count
+        TextElement
+          :parentSize
+          :textBottomCenter
+          color: #9
+          fontSize: 15
+          fontFamily: :sans-serif
+          text: "" #{@count} / 9

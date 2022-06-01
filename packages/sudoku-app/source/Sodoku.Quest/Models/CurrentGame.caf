@@ -3,7 +3,7 @@ import &StandardImport, &sudoku
 emptyGameBoard = array til 9 with array til 9 with 0
 
 normalizeState = (state) ->
-  state extract initialBoard, playerBoard, notesBoard
+  state extract initialBoard, playerBoard, notesBoard, selectedCell
   return state unless initialBoard && playerBoard && notesBoard
 
   merge state, {}
@@ -13,10 +13,13 @@ normalizeState = (state) ->
     notesBoard
     mergedBoard = mergeBoards initialBoard, playerBoard
     autoNotes:    getAllLegalNumbers mergedBoard
+    unfinishedNumbers: log getAllUnfinishedNumbers mergedBoard
     solutions =   solve initialBoard, state.maxSolutionsScanned
     solved: eq solutions[0], mergedBoard
     numberCounts: each row in mergedBoard into numberCounts = array to 9 with 0
       each n in row do numberCounts[n]++
+    selectedNumber:
+      selectedCell && mergedBoard[selectedCell.y][selectedCell.x]
 
 class CurrentGame extends ApplicationState
   @persistant()
