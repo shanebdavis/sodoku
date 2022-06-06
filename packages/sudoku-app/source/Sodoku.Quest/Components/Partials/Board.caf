@@ -79,12 +79,12 @@ class Board extends FluxComponent
                   else
                     @notesBoard[y][x]
 
-                playerNumber:     @playerBoard[y][x]
+                playerNumber =     @playerBoard[y][x]
                 color:
                   if cell.eq @selectedCell
                     if @editingBoard then #4af
                     else if @noteTaking then #e else #ff8
-                  else if @gameView.showAllSelectedNumbers && @selectedNumber > 0 && number == @selectedNumber
+                  else if @gameView.showAllSelectedNumbers && @selectedNumber > 0 && (playerNumber || number) == @selectedNumber
                     #ff88
                   else
                     rgbColor(color).blend #000 shade
