@@ -2,24 +2,29 @@ import &StandardImport, &sudoku
 
 emptyGameBoard = array til 9 with array til 9 with 0
 
-normalizeState = (state) ->
-  state extract initialBoard, playerBoard, notesBoard, selectedCell
+normalizeState = (state, previousState) ->
+  state extract initialBoard, playerBoard, notesBoard, selectedCell, solutions
   return state unless initialBoard && playerBoard && notesBoard
+  mergedBoard = mergeBoards initialBoard, playerBoard
+  mergedBoardChanged  = neq mergedBoard,  previousState?.mergedBoard
+  initialBoardChanged = neq initialBoard, previousState?.initialBoard
 
-  merge state, {}
-    isLegalBoard = isAllLegal initialBoard
-    playerBoard
-    initialBoard
-    notesBoard
-    mergedBoard = mergeBoards initialBoard, playerBoard
-    autoNotes:    getAllLegalNumbers mergedBoard
-    unfinishedNumbers: log getAllUnfinishedNumbers mergedBoard
-    solutions =   solve initialBoard, state.maxSolutionsScanned
-    solved: eq solutions[0], mergedBoard
-    numberCounts: each row in mergedBoard into numberCounts = array to 9 with 0
-      each n in row do numberCounts[n]++
-    selectedNumber:
-      selectedCell && mergedBoard[selectedCell.y][selectedCell.x]
+  merge state,
+    selectedNumber: selectedCell && mergedBoard[selectedCell.y][selectedCell.x]
+
+    if initialBoardChanged then {}
+      initialBoard
+      isLegalBoard: isAllLegal initialBoard
+      solutions =   solve initialBoard, state.maxSolutionsScanned
+
+    if mergedBoardChanged then {}
+      mergedBoard
+      numberCounts: each row in mergedBoard into numberCounts = array to 9 with 0
+        each n in row do numberCounts[n]++
+      unfinishedNumbers:  getAllUnfinishedNumbers mergedBoard
+      autoNotes:          getAllLegalNumbers mergedBoard
+      legalPlacements:    identifyLegalPlacements mergedBoard
+      solved:             eq solutions[0], mergedBoard
 
 class CurrentGame extends ApplicationState
   @persistant()
@@ -45,8 +50,7 @@ class CurrentGame extends ApplicationState
 
     playerBoard: defaultPlayerBoard = emptyGameBoard
 
-    notesBoard: defaultPlayerBoard
-
+    notesBoard:       defaultPlayerBoard
 
   setSelectedBoard: (board) -> @[@selectedBoardTime] = board
 
@@ -75,7 +79,9 @@ class CurrentGame extends ApplicationState
       else if isString key
         newState = [key]: value
       key
-    super normalizeState merge @state, newState
+    super normalizeState
+      merge @state, newState
+      @state
 
   setNumber: (number) ->
     if @selectedCell

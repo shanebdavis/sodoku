@@ -9,9 +9,11 @@ class Board extends FluxComponent
     :currentGame.autoNotes
     :currentGame.selectedNumber
     :currentGame.unfinishedNumbers
+    :currentGame.legalPlacements
     :gameView.gameView
 
   render: ->
+    log {} @legalPlacements
     Element
       :childrenSize
       draw:
@@ -51,7 +53,7 @@ class Board extends FluxComponent
             array number, x in j
               cell = point x, y
               color =
-                if @gameView.showLegalPlacements && hasEncodedNumber @autoNotes[y][x], @selectedNumber
+                if @gameView.showIllegalPlacements && hasEncodedNumber @autoNotes[y][x], @selectedNumber
                   #4af7
 
                 else if @gameView.showUnfinishedGroups && hasEncodedNumber @unfinishedNumbers[y][x], @selectedNumber
@@ -80,8 +82,11 @@ class Board extends FluxComponent
                     @notesBoard[y][x]
 
                 playerNumber =     @playerBoard[y][x]
+                textColor:
+                  if !(number > 0) then appColors.playerPlacement else appColors.initialPlacement
                 color:
-                  if cell.eq @selectedCell
+                  if @gameView.showInvalidPlacements && !@legalPlacements[y][x] then appColors.illegal
+                  else if cell.eq @selectedCell
                     if @editingBoard then #4af
                     else if @noteTaking then #e else #ff8
                   else if @gameView.showAllSelectedNumbers && @selectedNumber > 0 && (playerNumber || number) == @selectedNumber

@@ -25,7 +25,7 @@ allEncodedNumbers = 0b111111111 # 9 1-bits
     [x, y] = get9XY squareNumber
     each c til 9
       [i, j] = get9XY c
-      f board[y * 3 + j][x * 3 + i], i, j
+      f board[yy = y * 3 + j][xx = x * 3 + i], xx, yy
 
   ###################################
     Handy Validators; not essential
@@ -64,11 +64,12 @@ allEncodedNumbers = 0b111111111 # 9 1-bits
     identifyLegalPlacementsInGroup = (board, result, groupNumber, eachElementInGroup) ->
       resetIlpCounts()
       haveIllegalNumber = false
-      eachElementInGroup board, groupNumber, (v) -> if v > 0
+      eachElementInGroup board, groupNumber, (v, x, y) -> if v > 0
         if 1 < c = ilpCounts[v] = ilpCounts[v] + 1 then haveIllegalNumber = true
 
       if haveIllegalNumber
-        eachElementInGroup board, groupNumber, (v, x, y) -> result[y][x] = false if ilpCounts[v] > 1
+        eachElementInGroup board, groupNumber, (v, x, y) -> if ilpCounts[v] > 1
+          result[y][x] = false
 
     (board) ->
       result = array til 9 with array til 9 with true

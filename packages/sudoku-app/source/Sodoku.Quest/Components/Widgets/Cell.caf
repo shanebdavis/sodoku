@@ -8,6 +8,7 @@ class Cell extends FluxComponent
     playerNumber: undefined
     notes: undefined
     color: undefined
+    textColor: #4
     cell: point0
 
   @getter
@@ -29,7 +30,7 @@ class Cell extends FluxComponent
           fontWeight: if @haveInitialNumber then :normal else :bold
           fontFamily: :sans-serif
           text: if @haveInitialNumber then @number else @playerNumber
-          color: if !@haveInitialNumber then #0b0 else #4
+          color: @textColor
 
       else if @haveNotes
         TextElement

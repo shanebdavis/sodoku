@@ -1,0 +1,4 @@
+appColors:
+  illegal:          #faa
+  playerPlacement:  #0b0
+  initialPlacement: #4

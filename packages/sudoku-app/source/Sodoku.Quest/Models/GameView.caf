@@ -9,4 +9,6 @@ class GameView extends ApplicationState
     showUnfinishedGroups: false
     showSelectedRowColumn: false
     showAutoNotes: false
-    showLegalPlacements: false
+    showIllegalPlacements: false
+    showInvalidPlacements: false
+    showGimmies: false

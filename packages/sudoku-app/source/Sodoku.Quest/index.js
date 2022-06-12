@@ -6,7 +6,8 @@
 .addModules({
   App:            require('./App'),
   Main:           require('./Main'),
-  StandardImport: require('./StandardImport')
+  StandardImport: require('./StandardImport'),
+  Style:          require('./Style')
 });
 require('./Components');
 require('./Models');
