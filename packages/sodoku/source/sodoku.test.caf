@@ -128,13 +128,13 @@ test :get81XY ->
   assert.eq [0, 1], get81XY 9
   assert.eq [8, 8], get81XY 80
 
-test :eachElementInColunn ->
+test :eachElementInColumn ->
   all = []
-  eachElementInColunn validBoard, 0, (v) -> all.push v
+  eachElementInColumn validBoard, 0, (v) -> all.push v
   assert.eq all, [] 5, 6, 3, 4, 1, 7, 2, 9, 8
 
   all = []
-  eachElementInColunn validBoard, 8, (v) -> all.push v
+  eachElementInColumn validBoard, 8, (v) -> all.push v
   assert.eq all, [] 7, 8, 5, 9, 6, 1, 4, 3, 2
 
 test :eachElementInRow ->
@@ -370,3 +370,66 @@ test "solve slowToSolveBoard" ->
       1 2 9   8 3 5   7 4 6
       4 3 7   1 9 6   5 2 8
     solve slowToSolveBoard
+
+newBlankBoard = (v = 0, alterations) ->
+  b = array til 9 with array til 9 with v
+  each [x, y, v] in alterations
+    b[y][x] = v
+  b
+
+
+describe :identifyLegalPlacements ->
+  test "blank board" ->
+    assert.eq
+      identifyLegalPlacements
+        newBlankBoard 0
+      newBlankBoard true
+
+  test "good row" ->
+    assert.eq
+      identifyLegalPlacements
+        newBlankBoard 0, []
+          0 0 1
+          1 0 2
+
+      newBlankBoard true
+
+  test "good, solved board" ->
+    assert.eq
+      identifyLegalPlacements
+        solve newBlankBoard()
+
+      newBlankBoard true
+
+  test "bad row" ->
+    assert.eq
+      identifyLegalPlacements
+        newBlankBoard 0, []
+          0 0 1
+          1 0 1
+
+      newBlankBoard true, []
+        0 0 false
+        1 0 false
+
+  test "bad column" ->
+    assert.eq
+      identifyLegalPlacements
+        newBlankBoard 0, []
+          0 0 1
+          0 1 1
+
+      newBlankBoard true, []
+        0 0 false
+        0 1 false
+
+  test "bad region" ->
+    assert.eq
+      identifyLegalPlacements
+        newBlankBoard 0, []
+          0 0 1
+          1 1 1
+
+      newBlankBoard true, []
+        0 0 false
+        1 1 false

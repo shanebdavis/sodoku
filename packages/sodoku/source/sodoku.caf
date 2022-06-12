@@ -11,21 +11,21 @@ allEncodedNumbers = 0b111111111 # 9 1-bits
 
   isAllOk = (board, testEachElementInGroup) ->
     allGroupsOk    board, eachElementInRow,     testEachElementInGroup
-    && allGroupsOk board, eachElementInColunn,  testEachElementInGroup
+    && allGroupsOk board, eachElementInColumn,  testEachElementInGroup
     && allGroupsOk board, eachElementInSquare,  testEachElementInGroup
 
   squareNumberForLocation = (x, y)  -> (x / 3 | 0) + (y / 3 | 0) * 3
   get81XY                 = (i81)   -> i81 % 9, i81 / 9 | 0
   get9XY                  = (i9)    -> i9  % 3, i9  / 3 | 0
 
-  eachElementInColunn = (board, colNumber, f) -> each i til 9 with f board[i][colNumber]
-  eachElementInRow    = (board, rowNumber, f) -> each i til 9 with f board[rowNumber][i]
+  eachElementInColumn = (board, colNumber, f) -> each i til 9 with f board[i][colNumber], colNumber, i
+  eachElementInRow    = (board, rowNumber, f) -> each i til 9 with f board[rowNumber][i], i, rowNumber
 
   eachElementInSquare = (board, squareNumber, f) ->
     [x, y] = get9XY squareNumber
     each c til 9
       [i, j] = get9XY c
-      f board[y * 3 + j][x * 3 + i]
+      f board[y * 3 + j][x * 3 + i], i, j
 
   ###################################
     Handy Validators; not essential
@@ -52,6 +52,33 @@ allEncodedNumbers = 0b111111111 # 9 1-bits
     isLegal
 
   isAllLegal = (board) -> isAllOk board, isLegalGroup
+
+  ## identifyLegalPlacements
+    board >> true/false board (true == illegal)
+    'illegal' means for a given number, there is another instance of the same number
+      in the same row, column or square
+  identifyLegalPlacements = if true
+    ilpCounts = array til 9 with 0
+    resetIlpCounts = -> each i til 9 do ilpCounts[i] = 0
+
+    identifyLegalPlacementsInGroup = (board, result, groupNumber, eachElementInGroup) ->
+      resetIlpCounts()
+      haveIllegalNumber = false
+      eachElementInGroup board, groupNumber, (v) -> if v > 0
+        if 1 < c = ilpCounts[v] = ilpCounts[v] + 1 then haveIllegalNumber = true
+
+      if haveIllegalNumber
+        eachElementInGroup board, groupNumber, (v, x, y) -> result[y][x] = false if ilpCounts[v] > 1
+
+    (board) ->
+      result = array til 9 with array til 9 with true
+
+      each groupNumber til 9
+        identifyLegalPlacementsInGroup board, result, groupNumber, eachElementInRow
+        identifyLegalPlacementsInGroup board, result, groupNumber, eachElementInColumn
+        identifyLegalPlacementsInGroup board, result, groupNumber, eachElementInSquare
+
+      result
 
   ###################################
     Encoding
@@ -80,7 +107,7 @@ allEncodedNumbers = 0b111111111 # 9 1-bits
     f = (v) -> legalNumbers = removeEncodedNumber legalNumbers, v
 
     # inlined the following for 2x speed improviment in NodeJS runs:
-    #   eachElementInColunn board, x,            f
+    #   eachElementInColumn board, x,            f
     #   eachElementInRow    board, y,            f
     #   eachElementInSquare board, squareNumber, f
     each i til 9 with f board[i][x]
@@ -98,7 +125,7 @@ allEncodedNumbers = 0b111111111 # 9 1-bits
     f = (v) -> unfinishedNumbers = removeEncodedNumber unfinishedNumbers, v
 
     # inlined the following for 2x speed improviment in NodeJS runs:
-    #   eachElementInColunn board, x,            f
+    #   eachElementInColumn board, x,            f
     #   eachElementInRow    board, y,            f
     #   eachElementInSquare board, squareNumber, f
     # each i til 9 with f board[i][x]
