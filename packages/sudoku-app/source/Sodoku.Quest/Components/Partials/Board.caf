@@ -13,7 +13,6 @@ class Board extends FluxComponent
     :gameView.gameView
 
   render: ->
-    log {} @legalPlacements
     Element
       :childrenSize
       draw:
@@ -53,7 +52,7 @@ class Board extends FluxComponent
             array number, x in j
               cell = point x, y
               color =
-                if @gameView.showIllegalPlacements && hasEncodedNumber @autoNotes[y][x], @selectedNumber
+                if @gameView.showLegalPlacements && hasEncodedNumber @autoNotes[y][x], @selectedNumber
                   #4af7
 
                 else if @gameView.showUnfinishedGroups && hasEncodedNumber @unfinishedNumbers[y][x], @selectedNumber

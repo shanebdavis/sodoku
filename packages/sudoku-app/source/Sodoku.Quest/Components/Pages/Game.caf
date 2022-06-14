@@ -72,6 +72,18 @@ class Game extends FluxComponent
           action: if !@currentGame.editingBoard
             @models.currentGame.setNoteTaking
 
+        array i til @currentGame.saveGames.length
+          MenuButton
+            icon: :S
+            text: "" Select SaveGame #{i + 1}
+            rightText: if i == @currentGame.selectedSaveGame then 'selected'
+            action: -> @models.currentGame.setSelectedSaveGame i
+
+        MenuButton
+          icon: :A
+          text: "" Add SaveGame
+          action: -> @models.currentGame.addSaveGame()
+
         MenuToggle
           icon:   :e
           text:   "" Edit Board
