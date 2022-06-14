@@ -42,7 +42,6 @@ class Game extends FluxComponent
         Board()
         NumberBar()
 
-
         Element
           padding: top: 10 bottom: 10
           :parentWidthChildrenHeight
@@ -78,6 +77,12 @@ class Game extends FluxComponent
             text: "" Select SaveGame #{i + 1}
             rightText: if i == @currentGame.selectedSaveGame then 'selected'
             action: -> @models.currentGame.setSelectedSaveGame i
+
+        array i til @currentGame.saveGames.length
+          MenuButton
+            icon: :S
+            text: "" Save over SaveGame #{i + 1}
+            action: -> @models.currentGame.save i
 
         MenuButton
           icon: :A

@@ -117,6 +117,9 @@ class CurrentGame extends ApplicationState
     playerBoard:      state.saveGames[saveGameNum || 0] || state.playerBoard
     saveGames:        arrayWithElementReplaced state.saveGames, state.playerBoard, state.selectedSaveGame || 0
 
+  save: (saveGameNum) -> @setState (state) -> merge state, {}
+    saveGames:        arrayWithElementReplaced state.saveGames, state.playerBoard, state.saveGameNum
+
   solve: ->
     @playerBoard =
       try solve @initialBoard
