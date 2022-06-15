@@ -7,6 +7,7 @@ class Cell extends FluxComponent
     number: undefined
     playerNumber: undefined
     notes: undefined
+    autoNotes: undefined
     color: undefined
     textColor: #4
     cell: point0

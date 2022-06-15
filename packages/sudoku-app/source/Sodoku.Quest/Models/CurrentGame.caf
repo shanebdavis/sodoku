@@ -50,8 +50,9 @@ class CurrentGame extends ApplicationState
 
     playerBoard:  defaultPlayerBoard = emptyGameBoard
 
-    notesBoard:   defaultPlayerBoard
-    saveGames:    []
+    notesBoard:       defaultPlayerBoard
+    saveGames:        []
+    saveNotes:        []
     selectedSaveGame: undefined
 
   setSelectedBoard: (board) -> @[@selectedBoardTime] = board
@@ -104,21 +105,29 @@ class CurrentGame extends ApplicationState
             0
           else c
 
-  reset: -> @playerBoard = defaultPlayerBoard
-  resetNotes: -> @notesBoard = defaultPlayerBoard
+  reset:      -> @playerBoard = emptyGameBoard
+  resetNotes: -> @notesBoard  = emptyGameBoard
   resetAll: ->
     @saveGames = []
-    @initialBoard = @playerBoard = @notesBoard = defaultPlayerBoard
+    @saveNotes = []
+    @initialBoard = @playerBoard = @notesBoard = emptyGameBoard
 
-  addSaveGame: -> @setState (state) -> merge state, saveGames: arrayWith state.saveGames, defaultPlayerBoard
+  addSaveGame: -> @setState (state) -> merge state,
+    saveGames: arrayWith state.saveGames, emptyGameBoard
+    saveNotes: arrayWith state.saveNotes, emptyGameBoard
 
   setSelectedSaveGame: (saveGameNum) -> @setState (state) -> merge state, {}
     selectedSaveGame: saveGameNum
+
+    notesBoard:       state.saveNotes[saveGameNum || 0] || state.notesBoard
+    saveNotes:        arrayWithElementReplaced state.saveNotes, state.notesBoard, state.selectedSaveGame || 0
+
     playerBoard:      state.saveGames[saveGameNum || 0] || state.playerBoard
     saveGames:        arrayWithElementReplaced state.saveGames, state.playerBoard, state.selectedSaveGame || 0
 
   save: (saveGameNum) -> @setState (state) -> merge state, {}
-    saveGames:        arrayWithElementReplaced state.saveGames, state.playerBoard, state.saveGameNum
+    saveNotes:        arrayWithElementReplaced state.saveNotes, state.notesBoard,   saveGameNum
+    saveGames:        arrayWithElementReplaced state.saveGames, state.playerBoard,  saveGameNum
 
   solve: ->
     @playerBoard =

@@ -51,34 +51,13 @@ class Board extends FluxComponent
             :row :childrenSize
             array number, x in j
               cell = point x, y
-              color =
-                if @gameView.showLegalPlacements && hasEncodedNumber @autoNotes[y][x], @selectedNumber
-                  #4af7
-
-                else if @gameView.showUnfinishedGroups && hasEncodedNumber @unfinishedNumbers[y][x], @selectedNumber
-                  #4af3
-
-                else :white
-
-              shade =
-                if @gameView.showSelectedRowColumn
-                  if x == @selectedCell.x || y == @selectedCell.y
-                    .25
-                  else if squareNumberForLocation(x, y) == squareNumberForLocation @selectedCell.x, @selectedCell.y
-                    .15
-                  else 0
-
-                else 0
-
 
               Cell {}
                 cell
                 number
-                notes:
-                  if @gameView.showAutoNotes
-                    @autoNotes[y][x]
-                  else
-                    @notesBoard[y][x]
+                autoNotes =  if @gameView.showAutoNotes then @autoNotes[y][x]
+                playerNotes =      @notesBoard[y][x]
+                notes = if autoNotes then subtractEncodedNumbers autoNotes, playerNotes else playerNotes
 
                 playerNumber =     @playerBoard[y][x]
                 textColor:
@@ -91,4 +70,23 @@ class Board extends FluxComponent
                   else if @gameView.showAllSelectedNumbers && @selectedNumber > 0 && (playerNumber || number) == @selectedNumber
                     #ff88
                   else
-                    rgbColor(color).blend #000 shade
+                    rgbColor
+                      if @gameView.showLegalPlacements && hasEncodedNumber notes, @selectedNumber
+                        #4af7
+
+                      else if @gameView.showUnfinishedGroups && hasEncodedNumber @unfinishedNumbers[y][x], @selectedNumber
+                        #4af3
+
+                      else :white
+
+                    .blend
+                      #000
+                      if @gameView.showSelectedRowColumn
+                        if x == @selectedCell.x || y == @selectedCell.y
+                          .25
+                        else if squareNumberForLocation(x, y) == squareNumberForLocation @selectedCell.x, @selectedCell.y
+                          .15
+                        else 0
+
+                      else 0
+

@@ -89,6 +89,7 @@ allEncodedNumbers = 0b111111111 # 9 1-bits
   removeEncodedNumber = (numbers, number) -> numbers & (allEncodedNumbers - encodeNumber number)
   toggleEncodedNumber = (numbers, number) -> numbers ^ encodeNumber number
   hasEncodedNumber    = (numbers, number) -> !!(numbers & encodeNumber number)
+  subtractEncodedNumbers = (a, b) -> (a | b) ^ b # turn off any numbers in a that are also in b
 
   ################x###################
     Board tools
